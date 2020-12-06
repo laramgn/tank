@@ -5,17 +5,20 @@ import java.awt.*;
 //子弹类
 public class Bullet {
     private int x;
-    private final int SPEED = 3;
+    private final int SPEED = 5;
     private int y;
     private Dir dir;
-    private static int width = 20, height = 20;
+    public static int WIDTH = ResourceMngr.bulletD.getWidth();
+    public static int HEIGHT = ResourceMngr.bulletD.getHeight();
     private boolean live = true;
+    private Group group = Group.Bad;
     private TankFrame tf;
 
-    public Bullet(int x, int y, Dir dir, TankFrame tf) {
+    public Bullet(int x, int y, Dir dir, Group group, TankFrame tf) {
         this.x = x;
         this.y = y;
         this.dir = dir;
+        this.group = group;
         this.tf = tf;
     }
 
@@ -23,10 +26,20 @@ public class Bullet {
         if (!live) {
             tf.bulletList.remove(this);
         }
-        Color c = g.getColor();
-        g.setColor(Color.RED);
-        g.fillOval(x, y, 50, 50);
-        g.setColor(c);
+        switch (dir) {
+            case RIGHT:
+                g.drawImage(ResourceMngr.bulletR, x, y, null);
+                break;
+            case LEFT:
+                g.drawImage(ResourceMngr.bulletL, x, y, null);
+                break;
+            case UP:
+                g.drawImage(ResourceMngr.bulletU, x, y, null);
+                break;
+            case DOWN:
+                g.drawImage(ResourceMngr.bulletD, x, y, null);
+                break;
+        }
         move();
     }
 
@@ -47,5 +60,19 @@ public class Bullet {
         }
         if (x < 0 || y < 0 || x > TankFrame.GAME_WIDTH || y > TankFrame.GAME_HEIGHT) live = false;
 
+    }
+
+    public void collideWith(Tank tank) {
+        if (this.group ==  tank.getGroup()) return;
+        Rectangle rec1 = new Rectangle(this.x, this.y, this.WIDTH, this.HEIGHT);
+        Rectangle rec2 = new Rectangle(tank.getX(), tank.getY(), tank.TANK_WIDTH, tank.TANK_HEIGHT);
+        if (rec1.intersects(rec2)) {
+            tank.die();
+            this.die();
+        }
+    }
+
+    private void die() {
+        this.live = false;
     }
 }
